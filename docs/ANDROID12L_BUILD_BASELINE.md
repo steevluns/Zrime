@@ -43,7 +43,7 @@ The source trees and lunch target provide a candidate build baseline, but a succ
 The full Android source checkout and output are too large for a normal small GitHub-hosted runner. The build workflow therefore targets a dedicated self-hosted Linux x86_64 runner labelled `android-rom-builder` and checks for at least:
 - 24 logical CPU threads
 - 64 GiB RAM
-- 300 GiB free workspace storage
+- 400 GiB free workspace storage
 
 If those requirements are not met, the workflow stops before syncing or building. Do not remove this check to force a partial or corrupted build.
 
