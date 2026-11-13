@@ -1,0 +1,126 @@
+name: Build Zrime Android 12L (on7xelte)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zrime-android12l-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # A standard GitHub-hosted runner does not provide enough persistent workspace
+    # storage for a complete Android source sync and build.
+    runs-on: [self-hosted, linux, x64, android-rom-builder]
+    timeout-minutes: 1440
+    steps:
+      - name: Checkout Zrime build configuration
+        uses: actions/checkout@v4
+
+      - name: Check build host capacity
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "CPU threads: $(nproc)"
+          free -h
+          df -h "$GITHUB_WORKSPACE"
+          threads="$(nproc)"
+          memory_kib="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+          free_kib="$(df -Pk "$GITHUB_WORKSPACE" | awk 'NR==2 {print $4}')"
+          if [ "$threads" -lt 24 ]; then
+            echo "::error::Need at least 24 CPU threads."
+            exit 1
+          fi
+          if [ "$memory_kib" -lt 60000000 ]; then
+            echo "::error::Need at least 64 GiB RAM."
+            exit 1
+          fi
+          if [ "$free_kib" -lt 300000000 ]; then
+            echo "::error::Need at least 300 GiB free workspace storage."
+            exit 1
+          fi
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+            git git-lfs gnupg gperf imagemagick lib32ncurses5-dev lib32z1-dev \
+            libelf-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev \
+            libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools \
+            xsltproc zip zlib1g-dev python-is-python3
+          sudo apt-get clean
+
+      - name: Install repo launcher
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/bin"
+          curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o "$HOME/bin/repo"
+          chmod a+rx "$HOME/bin/repo"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Initialize LineageOS 19.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/android"
+          cd "$GITHUB_WORKSPACE/android"
+          repo init -u https://github.com/LineageOS/android.git -b lineage-19.1 --git-lfs
+          mkdir -p .repo/local_manifests
+          cp "$GITHUB_WORKSPACE/manifests/7870.xml" .repo/local_manifests/7870.xml
+
+      - name: Sync Android and device sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          repo sync -c -j"$(nproc --all)" --force-sync --no-clone-bundle --no-tags
+
+      - name: Build LineageOS for SM-G610F
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          source build/envsetup.sh
+          lunch lineage_on7xelte-userdebug
+          mka bacon
+
+      - name: Verify package and generate checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          product="$GITHUB_WORKSPACE/android/out/target/product/on7xelte"
+          shopt -s nullglob
+          zips=("$product"/lineage-*.zip)
+          if [ "${#zips[@]}" -eq 0 ]; then
+            echo "::error::No flashable LineageOS ZIP was produced."
+            exit 1
+          fi
+          mkdir -p "$GITHUB_WORKSPACE/release"
+          cp "${zips[@]}" "$GITHUB_WORKSPACE/release/"
+          for f in "$GITHUB_WORKSPACE"/release/*.zip; do
+            sha256sum "$f" >> "$GITHUB_WORKSPACE/release/SHA256SUMS"
+          done
+          for f in boot.img recovery.img dtbo.img vbmeta.img; do
+            if [ -f "$product/$f" ]; then cp "$product/$f" "$GITHUB_WORKSPACE/release/"; fi
+          done
+          {
+            echo "Target: Samsung Galaxy J7 Prime SM-G610F (on7xelte)"
+            echo "ROM: LineageOS 19.1 / Android 12L"
+            echo "Build UTC: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Commit: $(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)"
+          } > "$GITHUB_WORKSPACE/release/BUILD-INFO.txt"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zrime-Android-12L-on7xelte
+          path: release/
+          if-no-files-found: error
+          retention-days: 14
