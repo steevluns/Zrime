@@ -1,0 +1,103 @@
+name: Android 16 source readiness gate
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/**"
+      - "manifests/**"
+      - ".github/workflows/android16-readiness-gate.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "manifests/**"
+      - ".github/workflows/android16-readiness-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Zrime
+        uses: actions/checkout@v4
+
+      - name: Audit Android 16 source candidates
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          report="audit/android16-source-readiness.md"
+          blocked=0
+          {
+            echo "# Android 16 source readiness — on7xelte"
+            echo
+            echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            echo "This is a source-discovery gate only. It does not build Android or produce a flashable package."
+            echo
+            echo "## Exynos7870-Revived-Beta branch scan"
+            for repo in \
+              android_device_samsung_on7xelte \
+              android_device_samsung_universal7870-common \
+              android_vendor_samsung_on7xelte \
+              android_kernel_samsung_exynos7870 \
+              android_manifest_samsung_universal7870-common \
+              android_hardware_samsung; do
+              url="https://github.com/Exynos7870-Revived-Beta/$repo.git"
+              echo "### $repo"
+              refs="$(git ls-remote --heads "$url" || true)"
+              if [ -z "$refs" ]; then
+                echo "- Could not enumerate public branches."
+                blocked=1
+              else
+                echo "$refs" | awk '{sub("refs/heads/","",$2); print "- Branch: " $2}'
+                if ! echo "$refs" | grep -Eiq 'refs/heads/(lineage-23(\.2)?|lineage-23\.x|android-16|android16|16\.0)(/|$)'; then
+                  echo "- No recognized Android 16 / LineageOS 23 branch found."
+                  blocked=1
+                fi
+              fi
+              echo
+            done
+
+            echo "## Public Android16-on7xelte candidate"
+            candidate="https://github.com/ankursingh25643-crypto/Android16-on7xelte.git"
+            tmp="$(mktemp -d)"
+            if git clone --quiet --depth=1 "$candidate" "$tmp/candidate"; then
+              tracked="$(git -C "$tmp/candidate" ls-files)"
+              echo "- Repository cloned."
+              echo "- Tracked files:"
+              echo "$tracked" | sed 's/^/  - /'
+              device_files="$(find "$tmp/candidate/Device" -type f ! -name README.md 2>/dev/null | wc -l | tr -d ' ')"
+              if [ "$device_files" -eq 0 ]; then
+                echo "- Device source files (excluding README placeholders): 0"
+                echo "- Result: repository is a build-environment stub, not a device tree."
+                blocked=1
+              fi
+              if ! grep -Eq 'repo init|repo sync|lunch |m bacon|mka bacon' "$tmp/candidate/Build.yml"; then
+                echo "- Result: Build.yml does not initialize/sync Android sources or compile a ROM."
+                blocked=1
+              fi
+            else
+              echo "- Candidate repository could not be cloned."
+              blocked=1
+            fi
+            rm -rf "$tmp"
+            echo
+            echo "## Gate result"
+            if [ "$blocked" -eq 0 ]; then
+              echo "Candidate source checks passed. This still does not prove build or device compatibility."
+            else
+              echo "**BLOCKED:** no complete, verifiable Android 16 source set was found. Do not launch a release build."
+            fi
+          } | tee "$report"
+          echo "blocked=$blocked" >> "$GITHUB_OUTPUT"
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: android16-on7xelte-source-readiness
+          path: audit/android16-source-readiness.md
