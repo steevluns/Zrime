@@ -44,3 +44,11 @@
 6. Test boot and hardware functions before producing a release ZIP.
 
 See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No build or device test is claimed complete.
+
+## Follow-up upstream Android 16 source audit (2026-11-13)
+- Rechecked public GitHub repositories for an `on7xelte` / Exynos7870 Android 16 or LineageOS 23 device tree. No verifiable matching Android 16 device/common/vendor/kernel source set was found in the searches performed.
+- The `Exynos7870-Revived-Beta` project still identifies its common device baseline as `lineage-19.1`.
+- Additional public `on7xelte` trees inspected use older branches: `DevOtag-Open-Source/android_device_samsung_on7xelte` uses branch `twelve`; `Maxx12211/android_device_samsung_on7xelte` also uses branch `twelve`; `Exynos7870/android_device_samsung_on7xelte` defaults to `lineage-16.0`; `samsungexynos7870/android_device_samsung_on7xelte` defaults to `crdroid` and its board configuration inherits the legacy universal7870 common tree.
+- A web article claims an unofficial LineageOS 23 beta for Exynos7870/on7xelte, but it does not provide independently verifiable source revisions or a release artifact in the article itself, and explicitly calls the build beta. It is not an acceptable foundation for this project's stable/security-focused release.
+- Decision: do not switch the project to an unverified ZIP, do not re-label old trees as Android 16, and do not start a release build until a coherent Android 16 source manifest and exact SM-G610F compatibility evidence are available.
+- Next gate: obtain and inspect the actual Android 16 device tree, common tree, kernel, vendor blobs and recovery/partition definitions; then validate build-system compatibility and security interfaces before enabling any ROM build workflow.
