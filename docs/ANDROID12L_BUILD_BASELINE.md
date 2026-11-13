@@ -32,14 +32,11 @@ Supporting sources:
 
 The manifest tracks the upstream `lineage-19.1` branch. For a release build, pin every resolved project to immutable commit SHAs after the first successful sync and record them in a lock manifest.
 
-## Existing device release evidence
+## Release-artifact verification
 
-The project's OTA metadata advertises:
-- filename: `lineage-19.1-20260912-UNOFFICIAL-on7xelte.zip`
-- version: `19.1`
-- SHA-256: `d808d797815387d0fe7069b7a57abf93d04cbf31fa6decd455128893269259fa`
+The Exynos7870-Revived-Beta Releases repository was inspected directly. Its published LineageOS 19.1 release asset is for **j7xelte**, not **on7xelte**. The OTA JSON contains an on7xelte download URL, but that exact file was not present in the public Releases asset listing during this audit. Therefore, it is **not valid evidence of a downloadable, published on7xelte Android 12L ROM**.
 
-This confirms an on7xelte-specific Android 12L package was published by the source project. It does not prove that the package boots on every regional variant or that it meets Zrime's desired security/release requirements.
+The source trees and lunch target provide a candidate build baseline, but a successful on7xelte build has not yet been independently confirmed by a release asset. This raises the verification level required before any flashable package is trusted.
 
 ## Build runner requirements
 
