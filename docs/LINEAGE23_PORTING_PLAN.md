@@ -15,7 +15,7 @@ This is a source baseline, not an Android 16 manifest. Do not sync it as if it w
 
 ## Blocking risks
 1. The identified sources are LineageOS 19.1 generation, not LineageOS 23 / Android 16.
-2. The kernel defconfig contains `CONFIG_CMDLINE="androidboot.selinux=permissive"`. This is not acceptable for a release build. SELinux enforcing must be made to work through a complete policy and device validation; simply flipping the flag without fixing policy can prevent boot or break hardware.
+2. The pinned kernel defconfig has two SELinux enforcement bypasses: `CONFIG_CMDLINE="androidboot.selinux=permissive"` and `CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y`. A kernel patch removing both is now stored at `patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch`. This is a kernel-side correction only; the device policy still needs target-branch porting and hardware validation. See `docs/SELINUX_ENFORCING.md`.
 3. The device tree uses legacy HIDL interfaces and proprietary vendor blobs. Android 16 framework/VNDK compatibility is unproven.
 4. Partition sizes, recovery compatibility, firmware, boot image/DTB format, and exact SM-G610F regional variant must be verified on-device.
 5. Kernel 3.18 is old and may require substantial compatibility work for a modern Android framework.
@@ -25,10 +25,9 @@ This is a source baseline, not an Android 16 manifest. Do not sync it as if it w
 2. Establish a LineageOS 23 manifest and identify compatible common Exynos7870 platform repositories.
 3. Port device makefiles, product configuration, overlays, init scripts, fstab, VINTF, sepolicy, and HAL declarations.
 4. Audit every proprietary ELF blob for architecture, dependencies, linker namespaces, VNDK/API assumptions, and required 32-bit support.
-5. Port or replace legacy kernel interfaces as needed; validate boot image, DTB, modules, and required Android kernel features.
-6. Move SELinux to enforcing only after policy validation and successful boot tests.
-7. Build a userdebug image, inspect logs, and test display, touch, storage, Wi-Fi, Bluetooth, audio, cameras, GPS, RIL, fingerprint, sensors, charging, and recovery.
-8. Generate a flashable package only after device-specific validation and recovery/partition checks.
+5. Port or replace legacy kernel interfaces as needed; apply the SELinux kernel baseline patch, validate the generated kernel config, boot arguments, and complete policy.
+6. Build a userdebug image, boot on the exact device with SELinux enforcing, inspect AVC denials, and test display, touch, storage, Wi-Fi, Bluetooth, audio, cameras, GPS, RIL, fingerprint, sensors, charging, and recovery.
+7. Generate a flashable package only after device-specific validation and recovery/partition checks.
 
 ## Build policy
 No Android 16 build workflow should be presented as functional until the LineageOS 23 source manifest and all required project revisions are available. The current audit workflow only checks source references and uploads a report; it does not compile Android.
