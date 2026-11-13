@@ -33,9 +33,10 @@ jobs:
               url="https://github.com/Exynos7870-Revived-Beta/$name.git"
               echo "## $name"
               if git ls-remote --exit-code --heads "$url" "refs/heads/$branch" >/tmp/ref.txt; then
-                printf '%s\n' "- Found branch: `$branch`" "- Commit: `$(awk '{print $1}' /tmp/ref.txt)`"
+                printf -- '- Found branch: `%s`\n' "$branch"
+                printf -- '- Commit: `%s`\n' "$(awk '{print $1}' /tmp/ref.txt)"
               else
-                echo "- MISSING: branch `$branch`"
+                printf -- '- MISSING: branch `%s`\n' "$branch"
               fi
               echo
             done
