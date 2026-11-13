@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- Reference baseline only: these projects are LineageOS 19.1 sources,
+       NOT an Android 16 / LineageOS 23-ready manifest. -->
+  <remote name="exynos7870-revived" fetch="https://github.com/Exynos7870-Revived-Beta" />
+  <project name="android_device_samsung_on7xelte"
+           path="device/samsung/on7xelte"
+           remote="exynos7870-revived"
+           revision="refs/heads/lineage-19.1" />
+  <project name="android_device_samsung_universal7870-common"
+           path="device/samsung/universal7870-common"
+           remote="exynos7870-revived"
+           revision="refs/heads/lineage-19.1" />
+  <project name="android_vendor_samsung_on7xelte"
+           path="vendor/samsung/on7xelte"
+           remote="exynos7870-revived"
+           revision="refs/heads/lineage-19.1" />
+  <project name="android_kernel_samsung_exynos7870"
+           path="kernel/samsung/exynos7870"
+           remote="exynos7870-revived"
+           revision="refs/heads/lineage-19.1" />
+</manifest>
