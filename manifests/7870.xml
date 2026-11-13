@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+    <!-- Verified LineageOS 19.1 / Android 12L source set for SM-G610F (on7xelte). -->
+    <remote fetch="https://github.com/Exynos7870-Revived-Beta" name="Beta" />
+
+    <!-- Device trees -->
+    <project name="android_device_samsung_on7xelte" path="device/samsung/on7xelte" remote="Beta" revision="lineage-19.1" />
+    <project name="android_device_samsung_universal7870-common" path="device/samsung/universal7870-common" remote="Beta" revision="lineage-19.1" />
+
+    <!-- Kernel -->
+    <project name="android_kernel_samsung_exynos7870" path="kernel/samsung/exynos7870" remote="Beta" revision="lineage-19.1" />
+
+    <!-- Proprietary vendor trees -->
+    <project name="android_vendor_samsung_on7xelte" path="vendor/samsung/on7xelte" remote="Beta" revision="lineage-19.1" />
+    <project name="android_vendor_samsung_universal7870-common" path="vendor/samsung/universal7870-common" remote="Beta" revision="lineage-19.1" />
+
+    <!-- Samsung hardware support -->
+    <project name="android_hardware_samsung" path="hardware/samsung" remote="Beta" revision="lineage-19.1" />
+    <project name="android_hardware_samsung_slsi-linaro_config" path="hardware/samsung_slsi-linaro/config" remote="Beta" revision="lineage-19.1" />
+    <project name="android_hardware_samsung_slsi-linaro_graphics" path="hardware/samsung_slsi-linaro/graphics" remote="Beta" revision="lineage-19.1" />
+    <project name="android_hardware_samsung_slsi-linaro_exynos" path="hardware/samsung_slsi-linaro/exynos" remote="Beta" revision="lineage-19.1" />
+    <project name="android_hardware_samsung_slsi-linaro_openmax" path="hardware/samsung_slsi-linaro/openmax" remote="Beta" revision="lineage-19.1" />
+    <project name="android_hardware_samsung_slsi-linaro_exynos5" path="hardware/samsung_slsi-linaro/exynos5" remote="Beta" revision="lineage-19.1" />
+</manifest>
