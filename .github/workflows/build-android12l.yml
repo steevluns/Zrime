@@ -39,7 +39,7 @@ jobs:
             exit 1
           fi
           if [ "$free_kib" -lt 300000000 ]; then
-            echo "::error::Need at least 300 GiB free workspace storage."
+            echo "::error::Need at least 400 GiB free workspace storage."
             exit 1
           fi
 
