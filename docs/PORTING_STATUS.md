@@ -26,6 +26,11 @@
 - The available source baseline is LineageOS 19.1 / Android 12L generation, **not** LineageOS 23 / Android 16.
 - The common configuration targets Linux 3.18.
 - Legacy proprietary vendor blobs and HIDL HALs have not been shown compatible with Android 16.
+- The pinned device tree sets `PRODUCT_SHIPPING_API_LEVEL := 23` (Android 6.0-era launch API), and its device VINTF manifest is HIDL-based with compatibility target level 3.
+- The common board configuration is tied to Linux 3.18, sets `BOARD_VNDK_VERSION := current`, enables several legacy `BUILD_BROKEN_*` workarounds, and declares a vendor security patch level of `2020-12-05`.
+- The current vendor package contains legacy Samsung/HIDL services and 32-bit proprietary libraries; Android 16 compatibility is unproven and will require explicit ABI, linker, HAL and VINTF validation.
+- The legacy common BoardConfig declares 32 MiB boot, about 38 MiB recovery, about 2.67 GiB system and about 414 MiB vendor partitions. These are source configuration values, not verified live partition sizes for this exact handset; do not use them for a flashable image without device-side confirmation.
+- The recovery fstab uses Samsung by-name partitions and `encryptable=footer` for userdata. This is a legacy layout reference only; encryption behavior and current recovery compatibility have not been tested on the handset.
 - Exact SM-G610F partition/recovery layout and hardware functionality still require device-side verification.
 
 ## Current build state
