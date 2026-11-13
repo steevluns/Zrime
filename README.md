@@ -1,40 +1,36 @@
-# J7 Prime — Android 16 (LineageOS 23) port
+# Zrime — Samsung Galaxy J7 Prime (SM-G610F)
 
-Target device: **Samsung Galaxy J7 Prime (SM-G610F), codename `on7xelte`**.
+Target device: **Samsung Galaxy J7 Prime, codename `on7xelte`**.
 
-This repository is the starting point for a source-porting effort. It is **not a ROM build yet**, and it does not contain a flashable ZIP.
+## Selected Android version
 
-## Target goals
+The highest complete, device-specific source baseline verified for this exact device in this project is **Android 12L / LineageOS 19.1**.
 
-- Android 16 / LineageOS 23, subject to device-source and hardware compatibility.
-- A lightweight system image and a consistent dark theme.
-- Remove nonessential preinstalled apps while retaining essential telephony, camera, storage, Bluetooth, recovery and security components.
-- Keep Google Play services and Play Store support. The exact GApps package must match the verified device ABI and Android release; it may be distributed separately to keep the ROM smaller.
-- Preserve a safe, reversible build process and publish logs/artifacts only after a successful build.
+Android 16, 15, 14 and 13 did not have a complete, reproducible set of on7xelte device, kernel and vendor sources during the source audit. Newer LineageOS 22.2 work was found for other Exynos7870 models, but an on7xelte 22.2 build was not verified. Zrime therefore moves to the verified Android 12L baseline rather than claiming unsupported newer compatibility.
 
-## Important compatibility gate
+## Source and build files
 
-A 64-bit-capable CPU does **not** prove that this device can run a 64-bit Android userspace. Before selecting ARM64, the port must verify the boot image/kernel, vendor blobs, HALs, partition layout and existing device configuration. Do not flash an image until this is confirmed.
+- Local manifest: [manifests/7870.xml](manifests/7870.xml)
+- Source/build status: [docs/ANDROID12L_BUILD_BASELINE.md](docs/ANDROID12L_BUILD_BASELINE.md)
+- Manual build workflow: [Build Zrime Android 12L](.github/workflows/build-android12l.yml)
 
-The historical on7xelte device/vendor sources known to this project target older LineageOS branches. A discovered repository named Android16-on7xelte was inspected and found to contain only build-environment scaffolding, not device sources. A web article also points to an XDA beta thread, but no reproducible source manifest was verified. Neither is currently a valid build foundation.
+The source set uses LineageOS 19.1 and the Exynos7870-Revived-Beta device, common, kernel, vendor and Samsung hardware repositories. Device lunch target: `lineage_on7xelte-userdebug`.
 
-## GitHub Actions
+## Build runner
 
-The workflows in `.github/workflows/device-source-audit.yml`, `.github/workflows/selinux-kernel-patch-check.yml`, and `.github/workflows/android16-readiness-gate.yml` are **source/security audits only**. They inspect legacy source references, validate the narrow kernel patch, and check whether a complete Android 16 source set has appeared. They do not compile Android or create a flashable ZIP. See [the Android 16 source audit](docs/ANDROID16_SOURCE_AUDIT.md).
+A complete Android build cannot reliably fit on a standard small GitHub-hosted runner. The workflow requires a dedicated self-hosted Linux x86_64 runner labelled `android-rom-builder`, with at least 24 CPU threads, 64 GiB RAM and 300 GiB free workspace storage. It is manual-dispatch only and stops if those requirements are not met.
 
-A full LineageOS build requires compatible Android 16 device, kernel and vendor trees, a matching manifest, and substantial RAM, storage and build time. Standard GitHub-hosted runners may be insufficient.
+## Release status
 
-## Next engineering steps
+The Android 12L source manifest and manual build workflow have been added. **A Zrime ROM build has not yet completed and there is no Zrime flashable ZIP yet.** The existing upstream OTA metadata lists an unofficial Android 12L on7xelte package, but that is not a Zrime build and is not a substitute for validating our own output.
 
-1. Audit device tree, kernel and proprietary vendor sources.
-2. Establish Android 16 compatibility and the actual kernel/userspace ABI.
-3. Port and validate device configuration, sepolicy, HALs and proprietary blobs.
-4. Build and boot-test a minimal image on the exact device.
-5. Add dark-theme overlays and a reviewed debloat list.
-6. Integrate compatible GApps only after ABI validation, then produce and test a recovery-installable package.
+Still required before release:
+1. Complete source sync and successful ROM compilation.
+2. Pin all synced source projects to immutable commit SHAs.
+3. Review and validate kernel configuration, SELinux enforcing, VINTF/HAL compatibility and partition assertions.
+4. Decide and test the dark theme and debloat set.
+5. Integrate or document a separately obtained Android 12L-compatible Google Apps package.
+6. Verify ZIP integrity, recovery installation and first boot on the exact SM-G610F.
+7. Test calls/SMS/mobile data, Wi-Fi, Bluetooth, camera, GPS, sensors, audio, storage, encryption and SELinux enforcing.
 
-## Release status: blocked
-
-This project is not currently a complete, stable, or security-validated ROM. Do not flash it or use it with primary accounts. The available source baseline is LineageOS 19.1 / Android 12L generation, not Android 16; no Android 16 build, flashable ZIP, enforcing boot, encryption validation, or hardware test has been completed. A release is prohibited until every applicable check in [docs/SECURITY_RELEASE_GATE.md](docs/SECURITY_RELEASE_GATE.md) passes on the exact SM-G610F device.
-
-**Safety:** Back up all data and the original firmware. An untested or mismatched image can make the device unbootable.
+Do not flash an untested image. Back up user data and original firmware first; an incompatible image can make the phone unbootable.
