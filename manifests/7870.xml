@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-    <!-- Exact Exynos7870-Revived-Beta LineageOS 19.1 source manifest,
-         narrowed only by retaining upstream dependencies needed for on7xelte. -->
+    <!-- Complete upstream Exynos7870-Revived-Beta LineageOS 19.1 source manifest,
+         plus the explicit LineageOS resources dependency required by the common tree. -->
     <remote fetch="https://github.com/Exynos7870-Revived-Beta" name="Beta" />
     <remote fetch="https://github.com/LineageOS" name="Lineage" />
 
