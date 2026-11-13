@@ -65,3 +65,13 @@ See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No ROM bui
 - The first two workflow attempts failed due to malformed patch hunk metadata and then mismatched context. Both were corrected.
 - Latest run: **success**, run ID `43374453805`, on commit `c94ff5ab796f5701f78d104fc636977cc0e321e3`. The patch application and defconfig assertions passed.
 - This is a source-level patch check only. It does not compile the kernel or Android sepolicy, inspect the final boot image command line, boot the phone, or validate encryption/hardware. A passing run is not a ROM release approval.
+
+
+## Additional Android 16 candidate verification (2026-11-13)
+- GitHub repository search surfaced `ankursingh25643-crypto/Android16-on7xelte` (default branch `main`, latest inspected commit `6191ac34643316b6c04e5a8f01d8174bcddc6d0c`, last activity observed 2026-09-12).
+- Inspected the repository tree and build files. It is only a small build-environment stub: `Device/Device` contains a placeholder README and no device source files; `Build.yml` installs host dependencies and the repo launcher but does not run `repo init`, `repo sync`, `lunch`, or an Android build. It is not a usable Android 16 source tree.
+- The GETDroidTips article updated 2026-10-31 links an XDA thread titled as a beta LineageOS 23.2 / Android 16 Exynos7870 build: `https://xdaforums.com/t/beta-rom-16-0-exynos-7870-linageos-23-2-on7xelte.4803312/`. The article itself supplies no source revisions or downloadable ROM asset, calls the build beta, and points to XDA for current issues. The XDA page could not be retrieved during this audit. Treat this as an unverified lead only.
+- Found public Linux kernel mailing-list patches for initial upstream Exynos7870 / on7xelte devicetree support. This is Linux mainline platform work, not an Android device tree, vendor blob set, Android HAL integration, recovery, or LineageOS 23 manifest.
+- Added `docs/ANDROID16_SOURCE_AUDIT.md` with the candidate repository inspection, evidence, and blockers.
+- Added `.github/workflows/android16-readiness-gate.yml` to recheck public Exynos7870 branch availability and reject the identified placeholder repository as a ROM source. This workflow audits sources only and intentionally does not launch a ROM build.
+- Current decision remains **BLOCKED**: no reproducible Android 16 source set has passed inspection. No Android 16 build or flashable ZIP exists.
