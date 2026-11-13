@@ -18,7 +18,7 @@ The source set uses LineageOS 19.1 and the Exynos7870-Revived-Beta device, commo
 
 ## Build runner
 
-A complete Android build cannot reliably fit on a standard small GitHub-hosted runner. The workflow requires a dedicated self-hosted Linux x86_64 runner labelled `android-rom-builder`, with at least 24 CPU threads, 64 GiB RAM and 300 GiB free workspace storage. It is manual-dispatch only and stops if those requirements are not met.
+A complete Android build cannot reliably fit on a standard small GitHub-hosted runner. The workflow requires a dedicated self-hosted Linux x86_64 runner labelled `android-rom-builder`, with at least 24 CPU threads, 64 GiB RAM and 400 GiB free workspace storage. It is manual-dispatch only and stops if those requirements are not met.
 
 ## Release status
 
