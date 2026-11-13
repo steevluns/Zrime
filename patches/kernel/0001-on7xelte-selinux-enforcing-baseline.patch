@@ -17,7 +17,7 @@ only be enabled after policy compilation and device-side AVC validation.
 diff --git a/arch/arm64/configs/exynos7870-on7xelte_defconfig b/arch/arm64/configs/exynos7870-on7xelte_defconfig
 --- a/arch/arm64/configs/exynos7870-on7xelte_defconfig
 +++ b/arch/arm64/configs/exynos7870-on7xelte_defconfig
-@@ -286,7 +286,7 @@
+@@ -286,6 +286,6 @@
  # Boot options
  #
 -CONFIG_CMDLINE="androidboot.selinux=permissive"
@@ -25,7 +25,7 @@ diff --git a/arch/arm64/configs/exynos7870-on7xelte_defconfig b/arch/arm64/confi
  # CONFIG_CMDLINE_FROM_BOOTLOADER is not set
  CONFIG_CMDLINE_EXTEND=y
  # CONFIG_CMDLINE_FORCE is not set
-@@ -1200,7 +1200,7 @@
+@@ -1200,5 +1200,5 @@
  CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
  CONFIG_SECURITY_SELINUX_DEVELOP=y
 -CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y
