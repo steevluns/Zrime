@@ -31,3 +31,11 @@ This is a source baseline, not an Android 16 manifest. Do not sync it as if it w
 
 ## Build policy
 No Android 16 build workflow should be presented as functional until the LineageOS 23 source manifest and all required project revisions are available. The current audit workflow only checks source references and uploads a report; it does not compile Android.
+
+
+## Newly discovered candidate review (2026-11-13)
+A GitHub search found `ankursingh25643-crypto/Android16-on7xelte`, but inspection showed it is not a source port: its Device subtree has no device implementation files and its workflow only prepares a host environment. It does not sync LineageOS or build a ROM. A GETDroidTips page points to an XDA beta thread (ID 4803312), but no pinned source manifest or verifiable release package was available from the article, and the XDA page could not be retrieved during this review. Do not treat either item as a verified build foundation.
+
+Initial upstream Linux devicetree support for on7xelte is a separate kernel-platform effort. It does not provide the Android HAL/vendor/recovery/security integration required for a device ROM.
+
+The repository now includes `docs/ANDROID16_SOURCE_AUDIT.md` and `.github/workflows/android16-readiness-gate.yml`. The gate is a source audit, not a build workflow. The port remains blocked until the complete Android 16 source set is found and validated.
