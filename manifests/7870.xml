@@ -3,6 +3,7 @@
     <!-- Exact Exynos7870-Revived-Beta LineageOS 19.1 source manifest,
          narrowed only by retaining upstream dependencies needed for on7xelte. -->
     <remote fetch="https://github.com/Exynos7870-Revived-Beta" name="Beta" />
+    <remote fetch="https://github.com/LineageOS" name="Lineage" />
 
     <!-- Device trees published by the upstream 7870 manifest -->
     <project name="android_device_samsung_j7xelte" path="device/samsung/j7xelte" remote="Beta" revision="lineage-19.1" />
@@ -38,5 +39,5 @@
     <project name="android_hardware_samsung_slsi-linaro_exynos5" path="hardware/samsung_slsi-linaro/exynos5" remote="Beta" revision="lineage-19.1" />
 
     <!-- Required by universal7870-common/lineage.dependencies -->
-    <project name="android_packages_resources_devicesettings" path="packages/resources/devicesettings" remote="github" revision="lineage-19.1" />
+    <project name="android_packages_resources_devicesettings" path="packages/resources/devicesettings" remote="Lineage" revision="lineage-19.1" />
 </manifest>
