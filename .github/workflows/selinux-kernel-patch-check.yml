@@ -1,0 +1,63 @@
+name: Validate on7xelte SELinux kernel baseline
+
+on:
+  push:
+    paths:
+      - "patches/kernel/**"
+      - "manifests/lineage-19.1-reference.xml"
+      - ".github/workflows/selinux-kernel-patch-check.yml"
+  pull_request:
+    paths:
+      - "patches/kernel/**"
+      - "manifests/lineage-19.1-reference.xml"
+      - ".github/workflows/selinux-kernel-patch-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  patch-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Zrime
+        uses: actions/checkout@v4
+
+      - name: Install Git
+        run: sudo apt-get update && sudo apt-get install -y git
+
+      - name: Read pinned kernel revision
+        id: pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(sed -n '/android_kernel_samsung_exynos7870/,/revision=/s/.*revision="\([0-9a-f]\{40\}\)".*/\1/p' manifests/lineage-19.1-reference.xml)"
+          test "${#sha}" -eq 40
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact reference kernel and test patch application
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://github.com/Exynos7870-Revived-Beta/android_kernel_samsung_exynos7870.git kernel
+          git -C kernel fetch --depth=1 origin "${{ steps.pin.outputs.sha }}"
+          git -C kernel checkout --detach FETCH_HEAD
+          git -C kernel apply --check "$GITHUB_WORKSPACE/patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch"
+          git -C kernel apply "$GITHUB_WORKSPACE/patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch"
+
+      - name: Assert patched defconfig has no SELinux enforcement bypass
+        shell: bash
+        run: |
+          set -euo pipefail
+          cfg="kernel/arch/arm64/configs/exynos7870-on7xelte_defconfig"
+          test -f "$cfg"
+          grep -qx 'CONFIG_CMDLINE=""' "$cfg"
+          grep -qx '# CONFIG_SECURITY_SELINUX_NEVER_ENFORCE is not set' "$cfg"
+          grep -qx 'CONFIG_SECURITY_SELINUX=y' "$cfg"
+          if grep -Eq 'androidboot\.selinux=permissive|selinux=0|CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y' "$cfg"; then
+            echo "::error::SELinux enforcement bypass remains in patched defconfig"
+            exit 1
+          fi
+          echo "PASS: patch applies to the pinned kernel revision and removes the two known defconfig bypasses."
+          echo "LIMITATION: this is a source-level patch check, not a kernel build, Android policy compile, enforcing boot, or device test."
