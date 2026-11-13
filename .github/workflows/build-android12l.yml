@@ -34,7 +34,7 @@ jobs:
             echo "::error::Need at least 24 CPU threads."
             exit 1
           fi
-          if [ "$memory_kib" -lt 60000000 ]; then
+          if [ "$memory_kib" -lt 64000000 ]; then
             echo "::error::Need at least 64 GiB RAM."
             exit 1
           fi
