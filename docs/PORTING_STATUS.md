@@ -52,3 +52,9 @@ See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No build o
 - A web article claims an unofficial LineageOS 23 beta for Exynos7870/on7xelte, but it does not provide independently verifiable source revisions or a release artifact in the article itself, and explicitly calls the build beta. It is not an acceptable foundation for this project's stable/security-focused release.
 - Decision: do not switch the project to an unverified ZIP, do not re-label old trees as Android 16, and do not start a release build until a coherent Android 16 source manifest and exact SM-G610F compatibility evidence are available.
 - Next gate: obtain and inspect the actual Android 16 device tree, common tree, kernel, vendor blobs and recovery/partition definitions; then validate build-system compatibility and security interfaces before enabling any ROM build workflow.
+
+## SELinux source-level CI check added (2026-11-13)
+- Added `.github/workflows/selinux-kernel-patch-check.yml`.
+- On relevant pushes, pull requests, or manual dispatch, it checks out the exact kernel revision pinned in the reference manifest, verifies that the stored patch applies cleanly, applies it in the CI workspace, and asserts that the patched defconfig keeps SELinux enabled while removing the two known enforcement bypasses.
+- This workflow is a source-level patch-application check only. It does not compile the kernel or Android sepolicy, inspect the final boot image command line, boot the phone, or validate encryption/hardware. A passing run is not a ROM release approval.
+- The workflow was added in commit `e1b468290196533f768d782d83117d1febf02c76`; its run result has not yet been verified here.
