@@ -15,10 +15,16 @@
 - Updated `.github/workflows/device-source-audit.yml` to audit the four newer source repositories and upload the report.
 - Added `docs/LINEAGE23_PORTING_PLAN.md` with the porting sequence and technical blockers.
 
-## Critical findings
+## SELinux investigation and remediation
+- Inspected the pinned kernel defconfig and found **two** enforcement bypasses: `CONFIG_CMDLINE="androidboot.selinux=permissive"` and `CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y`.
+- Added `patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch` to remove both bypasses in the kernel configuration.
+- Added `docs/SELINUX_ENFORCING.md` with application steps, policy checks, boot-argument audit, and device validation.
+- The common device tree already includes the Exynos7870 SLSI SELinux policy makefile and the common vendor policy directory.
+- **Not yet complete:** the patch has not been applied to a checked-out kernel build, the final Android 16 policy has not been ported/compiled, and no enforcing boot or AVC validation has been performed. Do not call the ROM SELinux-enforcing yet.
+
+## Other critical findings
 - The available source baseline is LineageOS 19.1 / Android 12L generation, **not** LineageOS 23 / Android 16.
 - The common configuration targets Linux 3.18.
-- The kernel defconfig includes `CONFIG_CMDLINE="androidboot.selinux=permissive"`. This is not acceptable for a release ROM. SELinux enforcing requires a completed and tested policy; blindly changing this flag may break boot or hardware.
 - Legacy proprietary vendor blobs and HIDL HALs have not been shown compatible with Android 16.
 - Exact SM-G610F partition/recovery layout and hardware functionality still require device-side verification.
 
@@ -32,9 +38,9 @@
 ## Next required work
 1. Identify a viable LineageOS 23 / Android 16 Exynos7870 platform base and all required dependency repositories.
 2. Port the device/common trees and vendor integration to the Android 16 build system and framework interfaces.
-3. Resolve kernel compatibility, boot image/DTB handling, and SELinux enforcing.
+3. Apply and validate the kernel SELinux patch, port the device policy, and pass enforcing boot/AVC tests.
 4. Validate partition sizes, recovery, and the exact SM-G610F variant.
 5. Only after the source port is coherent, add an Android 16 build workflow and attempt a userdebug build.
 6. Test boot and hardware functions before producing a release ZIP.
 
-See `docs/LINEAGE23_PORTING_PLAN.md` for details. No build or device test is claimed complete.
+See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No build or device test is claimed complete.
