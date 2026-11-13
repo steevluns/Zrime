@@ -33,4 +33,8 @@ A full LineageOS build requires compatible Android 16 device, kernel and vendor 
 5. Add dark-theme overlays and a reviewed debloat list.
 6. Integrate compatible GApps only after ABI validation, then produce and test a recovery-installable package.
 
+## Release status: blocked
+
+This project is not currently a complete, stable, or security-validated ROM. Do not flash it or use it with primary accounts. The available source baseline is LineageOS 19.1 / Android 12L generation, not Android 16; no Android 16 build, flashable ZIP, enforcing boot, encryption validation, or hardware test has been completed. A release is prohibited until every applicable check in [docs/SECURITY_RELEASE_GATE.md](docs/SECURITY_RELEASE_GATE.md) passes on the exact SM-G610F device.
+
 **Safety:** Back up all data and the original firmware. An untested or mismatched image can make the device unbootable.
