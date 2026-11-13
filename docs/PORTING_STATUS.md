@@ -47,6 +47,7 @@ See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No ROM bui
 
 ## Follow-up upstream Android 16 source audit (2026-11-13)
 - Rechecked public GitHub repositories for an `on7xelte` / Exynos7870 Android 16 or LineageOS 23 device tree. No verifiable matching Android 16 device/common/vendor/kernel source set was found in the searches performed.
+- Queried the live branch lists for all four pinned `Exynos7870-Revived-Beta` repositories. Device, common, and vendor trees expose only `lineage-19.1`; the kernel exposes `lineage-19.1`, `lineage-19.1-bpf`, `lineage-19.1-bpf-ksu`, and `lineage-19.1-nobpf`. No Android 16 / LineageOS 23 branch was present in those repositories at the time of inspection.
 - The `Exynos7870-Revived-Beta` project still identifies its common device baseline as `lineage-19.1`.
 - Additional public `on7xelte` trees inspected use older branches: `DevOtag-Open-Source/android_device_samsung_on7xelte` uses branch `twelve`; `Maxx12211/android_device_samsung_on7xelte` also uses branch `twelve`; `Exynos7870/android_device_samsung_on7xelte` defaults to `lineage-16.0`; `samsungexynos7870/android_device_samsung_on7xelte` defaults to `crdroid` and its board configuration inherits the legacy universal7870 common tree.
 - A web article claims an unofficial LineageOS 23 beta for Exynos7870/on7xelte, but it does not provide independently verifiable source revisions or a release artifact in the article itself, and explicitly calls the build beta. It is not an acceptable foundation for this project's stable/security-focused release.
