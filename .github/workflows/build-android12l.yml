@@ -12,8 +12,7 @@ concurrency:
 
 jobs:
   build:
-    # A standard GitHub-hosted runner does not provide enough persistent workspace
-    # storage for a complete Android source sync and build.
+    # Requires a dedicated, adequately provisioned self-hosted builder.
     runs-on: [self-hosted, linux, x64, android-rom-builder]
     timeout-minutes: 1440
     steps:
@@ -31,14 +30,14 @@ jobs:
           memory_kib="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
           free_kib="$(df -Pk "$GITHUB_WORKSPACE" | awk 'NR==2 {print $4}')"
           if [ "$threads" -lt 24 ]; then
-            echo "::error::Need at least 24 CPU threads."
+            echo "::error::Need at least 24 logical CPU threads."
             exit 1
           fi
-          if [ "$memory_kib" -lt 64000000 ]; then
+          if [ "$memory_kib" -lt 67108864 ]; then
             echo "::error::Need at least 64 GiB RAM."
             exit 1
           fi
-          if [ "$free_kib" -lt 300000000 ]; then
+          if [ "$free_kib" -lt 419430400 ]; then
             echo "::error::Need at least 400 GiB free workspace storage."
             exit 1
           fi
@@ -75,12 +74,56 @@ jobs:
           mkdir -p .repo/local_manifests
           cp "$GITHUB_WORKSPACE/manifests/7870.xml" .repo/local_manifests/7870.xml
 
-      - name: Sync Android and device sources
+      - name: Sync Android and complete Exynos 7870 sources
         shell: bash
         run: |
           set -euo pipefail
           cd "$GITHUB_WORKSPACE/android"
           repo sync -c -j"$(nproc --all)" --force-sync --no-clone-bundle --no-tags
+
+      - name: Apply upstream compatibility and Zrime patches
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          patches_dir="$RUNNER_TEMP/exynos7870-patches"
+          git clone --depth 1 --branch lineage-19.1 https://github.com/Exynos7870-Revived-Beta/Patches.git "$patches_dir"
+
+          apply_or_verify() {
+            local repo_path="$1"
+            local patch_file="$2"
+            if git -C "$repo_path" apply --check "$patch_file"; then
+              git -C "$repo_path" apply "$patch_file"
+              echo "Applied: $patch_file"
+            elif git -C "$repo_path" apply --reverse --check "$patch_file"; then
+              echo "Already present: $patch_file"
+            else
+              echo "::error::Patch does not apply cleanly: $patch_file"
+              exit 1
+            fi
+          }
+
+          apply_or_verify frameworks/base "$patches_dir/0001-frameworks_base-statusbar-nullcheck-and-tuner-cleanup.patch"
+          apply_or_verify lineage-sdk "$patches_dir/0001-lineage_sdk-charging_control-nullcheck.patch"
+          apply_or_verify device/samsung/on7xelte "$GITHUB_WORKSPACE/patches/device/0001-on7xelte-default-dark-theme.patch"
+          apply_or_verify kernel/samsung/exynos7870 "$GITHUB_WORKSPACE/patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch"
+
+          defconfig="kernel/samsung/exynos7870/arch/arm64/configs/exynos7870-on7xelte_defconfig"
+          grep -q '^CONFIG_SECURITY_SELINUX=y$' "$defconfig"
+          if grep -Eq '^CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y$|androidboot\.selinux=permissive' "$defconfig"; then
+            echo "::error::SELinux permissive bypass remains in the on7xelte defconfig."
+            exit 1
+          fi
+          grep -q '^# CONFIG_SECURITY_SELINUX_NEVER_ENFORCE is not set$' "$defconfig"
+          echo "Static SELinux defconfig checks passed (runtime enforcing still requires device testing)."
+
+      - name: Save immutable source manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/android"
+          mkdir -p "$GITHUB_WORKSPACE/release"
+          repo manifest -r -o "$GITHUB_WORKSPACE/release/manifest-lock.xml"
 
       - name: Build LineageOS for SM-G610F
         shell: bash
@@ -99,11 +142,13 @@ jobs:
           shopt -s nullglob
           zips=("$product"/lineage-*.zip)
           if [ "${#zips[@]}" -eq 0 ]; then
-            echo "::error::No flashable LineageOS ZIP was produced."
+            echo "::error::No flashable on7xelte ZIP was produced."
             exit 1
           fi
-          mkdir -p "$GITHUB_WORKSPACE/release"
-          cp "${zips[@]}" "$GITHUB_WORKSPACE/release/"
+          for f in "${zips[@]}"; do
+            unzip -t "$f"
+            cp "$f" "$GITHUB_WORKSPACE/release/"
+          done
           for f in "$GITHUB_WORKSPACE"/release/*.zip; do
             sha256sum "$f" >> "$GITHUB_WORKSPACE/release/SHA256SUMS"
           done
@@ -112,9 +157,9 @@ jobs:
           done
           {
             echo "Target: Samsung Galaxy J7 Prime SM-G610F (on7xelte)"
-            echo "ROM: LineageOS 19.1 / Android 12L"
+            echo "ROM base: LineageOS 19.1 / Android 12L"
             echo "Build UTC: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "Commit: $(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)"
+            echo "Zrime commit: $(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)"
           } > "$GITHUB_WORKSPACE/release/BUILD-INFO.txt"
 
       - name: Upload build artifacts
