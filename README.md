@@ -22,7 +22,7 @@ A complete Android build cannot reliably fit on a standard small GitHub-hosted r
 
 ## Release status
 
-The Android 12L source manifest and manual build workflow have been added. **A Zrime ROM build has not yet completed and there is no Zrime flashable ZIP yet.** The existing upstream OTA metadata lists an unofficial Android 12L on7xelte package, but that is not a Zrime build and is not a substitute for validating our own output.
+The Android 12L source manifest and manual build workflow have been added. **A Zrime ROM build has not yet completed and there is no Zrime flashable ZIP yet.** The upstream OTA JSON mentions an on7xelte package URL, but the exact file was not present in the upstream public Releases asset listing when checked. The published LineageOS 19.1 ZIP found there is for j7xelte, not on7xelte; do not use it on the J7 Prime.
 
 Still required before release:
 1. Complete source sync and successful ROM compilation.
