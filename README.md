@@ -16,11 +16,11 @@ This repository is the starting point for a source-porting effort. It is **not a
 
 A 64-bit-capable CPU does **not** prove that this device can run a 64-bit Android userspace. Before selecting ARM64, the port must verify the boot image/kernel, vendor blobs, HALs, partition layout and existing device configuration. Do not flash an image until this is confirmed.
 
-The historical on7xelte device/vendor sources known to this project target older LineageOS branches. They cannot be treated as Android 16-ready without substantial porting and testing.
+The historical on7xelte device/vendor sources known to this project target older LineageOS branches. A discovered repository named Android16-on7xelte was inspected and found to contain only build-environment scaffolding, not device sources. A web article also points to an XDA beta thread, but no reproducible source manifest was verified. Neither is currently a valid build foundation.
 
 ## GitHub Actions
 
-The workflow in `.github/workflows/device-source-audit.yml` is a **source audit only**. It checks the availability of known legacy source branches and uploads a report. It does not compile Android or create a flashable ZIP.
+The workflows in `.github/workflows/device-source-audit.yml`, `.github/workflows/selinux-kernel-patch-check.yml`, and `.github/workflows/android16-readiness-gate.yml` are **source/security audits only**. They inspect legacy source references, validate the narrow kernel patch, and check whether a complete Android 16 source set has appeared. They do not compile Android or create a flashable ZIP. See [the Android 16 source audit](docs/ANDROID16_SOURCE_AUDIT.md).
 
 A full LineageOS build requires compatible Android 16 device, kernel and vendor trees, a matching manifest, and substantial RAM, storage and build time. Standard GitHub-hosted runners may be insufficient.
 
