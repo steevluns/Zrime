@@ -3,13 +3,10 @@ From: Zrime ROM Project <noreply@example.com>
 Date: Fri, 13 Nov 2026 00:00:00 +0000
 Subject: [PATCH] ARM64: on7xelte: remove SELinux permissive bypasses
 
-The reference kernel config explicitly appends androidboot.selinux=permissive
-and builds SELinux with CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y. Both prevent
-a meaningful enforcing validation. Leave the built-in command line free of a
-permissive override and disable the kernel option that forbids enforcement.
+The pinned reference kernel config adds a permissive boot argument and enables
+CONFIG_SECURITY_SELINUX_NEVER_ENFORCE. Remove both bypasses. This source change
+does not establish a complete policy or prove an enforcing boot.
 
-This change does not make the device policy complete; enforcing boot must
-only be enabled after policy compilation and device-side AVC validation.
 ---
  arch/arm64/configs/exynos7870-on7xelte_defconfig | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
@@ -17,17 +14,17 @@ only be enabled after policy compilation and device-side AVC validation.
 diff --git a/arch/arm64/configs/exynos7870-on7xelte_defconfig b/arch/arm64/configs/exynos7870-on7xelte_defconfig
 --- a/arch/arm64/configs/exynos7870-on7xelte_defconfig
 +++ b/arch/arm64/configs/exynos7870-on7xelte_defconfig
-@@ -286,6 +286,6 @@
- # Boot options
+@@ -458,4 +458,4 @@
  #
 -CONFIG_CMDLINE="androidboot.selinux=permissive"
 +CONFIG_CMDLINE=""
  # CONFIG_CMDLINE_FROM_BOOTLOADER is not set
  CONFIG_CMDLINE_EXTEND=y
- # CONFIG_CMDLINE_FORCE is not set
-@@ -1200,5 +1200,5 @@
- CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
+@@ -4712,7 +4712,7 @@
+ # CONFIG_SECURITY_SELINUX_DISABLE is not set
  CONFIG_SECURITY_SELINUX_DEVELOP=y
+ # CONFIG_SECURITY_SELINUX_FAKE_ENFORCE is not set
+ # CONFIG_SECURITY_SELINUX_ALWAYS_ENFORCE is not set
 -CONFIG_SECURITY_SELINUX_NEVER_ENFORCE=y
 +# CONFIG_SECURITY_SELINUX_NEVER_ENFORCE is not set
  CONFIG_SECURITY_SELINUX_AVC_STATS=y
