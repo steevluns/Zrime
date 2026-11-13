@@ -24,6 +24,12 @@ jobs:
         run: |
           set -euo pipefail
           echo "CPU threads: $(nproc)"
+          . /etc/os-release
+          echo "Build host OS: $PRETTY_NAME"
+          if [ "$VERSION_ID" != "20.04" ]; then
+            echo "::error::Use Ubuntu 20.04 for this LineageOS 19.1 build environment."
+            exit 1
+          fi
           free -h
           df -h "$GITHUB_WORKSPACE"
           threads="$(nproc)"
