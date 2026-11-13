@@ -3,48 +3,38 @@
 ## Target
 - Device: Samsung Galaxy J7 Prime SM-G610F (`on7xelte`).
 - Intended release: Android 16 / LineageOS 23.
-- Requested userspace: ARM64, with the required 32-bit compatibility where device blobs need it.
+- Requested userspace: ARM64, retaining 32-bit compatibility where required by legacy vendor components.
 
-## Source audit findings (2026-11-13)
+## Completed source investigation
+- Found a newer community source baseline in `Exynos7870-Revived-Beta`, branch family `lineage-19.1`.
+- Verified the device tree, shared Exynos7870 common tree, proprietary vendor tree, and Exynos7870 kernel repository.
+- Pinned their exact source commits in `manifests/lineage-19.1-reference.xml`.
+- Confirmed ARM64 userspace plus a 32-bit secondary ABI in the common board configuration.
+- Confirmed the device product inherits `core_64_bit.mk` and selects ARM64 GApps architecture.
+- Confirmed the device tree selects `exynos7870-on7xelte_defconfig`, and that kernel defconfig exists.
+- Updated `.github/workflows/device-source-audit.yml` to audit the four newer source repositories and upload the report.
+- Added `docs/LINEAGE23_PORTING_PLAN.md` with the porting sequence and technical blockers.
 
-A newer community source set was found under `Exynos7870-Revived-Beta`. It is materially newer than the older `Exynos7870` LineageOS 16.0 trees, but it is **not an Android 16 port**.
+## Critical findings
+- The available source baseline is LineageOS 19.1 / Android 12L generation, **not** LineageOS 23 / Android 16.
+- The common configuration targets Linux 3.18.
+- The kernel defconfig includes `CONFIG_CMDLINE="androidboot.selinux=permissive"`. This is not acceptable for a release ROM. SELinux enforcing requires a completed and tested policy; blindly changing this flag may break boot or hardware.
+- Legacy proprietary vendor blobs and HIDL HALs have not been shown compatible with Android 16.
+- Exact SM-G610F partition/recovery layout and hardware functionality still require device-side verification.
 
-Verified files:
-- `android_device_samsung_on7xelte`, branch `lineage-19.1`:
-  - `lineage_on7xelte.mk` inherits `core_64_bit.mk`.
-  - It sets `TARGET_GAPPS_ARCH := arm64`.
-  - `BoardConfig.mk` selects `exynos7870-on7xelte_defconfig`.
-  - The device tree inherits the shared `universal7870-common` configuration.
-- `android_device_samsung_universal7870-common`, branch `lineage-19.1`:
-  - `TARGET_ARCH := arm64`, `TARGET_CPU_ABI := arm64-v8a`.
-  - It also defines a 32-bit secondary architecture (`armeabi-v7a` / `armeabi`).
-  - `TARGET_USES_64_BIT_BINDER := true`.
-  - Kernel source is configured as `kernel/samsung/exynos7870`, Linux 3.18.
-- `android_vendor_samsung_on7xelte`, branch `lineage-19.1`:
-  - A vendor makefile and proprietary blob list exist, including legacy 32-bit vendor libraries.
+## Current build state
+- Android 16 / LineageOS 23 build: **not started**.
+- Flashable ZIP: **not available**.
+- Boot test on SM-G610F: **not performed**.
+- GApps package: pending validation against the final Android 16 build and ABI.
+- The current GitHub Actions workflow is a source-reference audit only; it is not a ROM compiler.
 
-## Compatibility assessment
+## Next required work
+1. Identify a viable LineageOS 23 / Android 16 Exynos7870 platform base and all required dependency repositories.
+2. Port the device/common trees and vendor integration to the Android 16 build system and framework interfaces.
+3. Resolve kernel compatibility, boot image/DTB handling, and SELinux enforcing.
+4. Validate partition sizes, recovery, and the exact SM-G610F variant.
+5. Only after the source port is coherent, add an Android 16 build workflow and attempt a userdebug build.
+6. Test boot and hardware functions before producing a release ZIP.
 
-- ARM64 Android userspace: **supported by the inspected LineageOS 19.1 device/common build configuration**. This is stronger evidence than CPU capability alone, but does not prove an Android 16 build will boot.
-- 32-bit compatibility: the shared build configuration declares a secondary 32-bit architecture. Keep this until every required vendor blob and app compatibility dependency is audited.
-- Android 16 / LineageOS 23: **not verified**. The inspected device, common, and vendor trees are on `lineage-19.1` (Android 12L generation), not `lineage-23.0`.
-- Kernel: the shared configuration targets Linux 3.18. The Android 16 compatibility of this kernel, its drivers, defconfig, DTB, and boot image is not established.
-- Vendor/HAL: a legacy proprietary vendor set exists, but its VNDK/HAL compatibility with Android 16 is not established.
-- Partition layout, recovery, firmware, camera, radio, Wi-Fi, fingerprint, SELinux policy, and first-boot behavior still require validation on the exact SM-G610F variant.
-
-## Build status
-- Android 16 build: not started.
-- Flashable ZIP: not available.
-- Device boot test: not performed.
-- GApps: pending Android 16 and ABI compatibility verification.
-
-## Required next engineering work
-
-1. Pin exact commits for the 19.1 device/common/vendor/kernel sources and inspect their manifests and dependencies.
-2. Verify the kernel repository's actual defconfig path, toolchain requirements, DTB handling, and boot image layout.
-3. Port device makefiles, init, sepolicy, VINTF, overlays, HAL interfaces, and vendor integration to LineageOS 23.
-4. Resolve Android 16 framework/VNDK incompatibilities; do not assume old proprietary blobs will work unchanged.
-5. Confirm partition sizes and recovery compatibility for the exact SM-G610F variant.
-6. Only then add a real Android 16 build workflow. A source-audit workflow is not a ROM build.
-
-The existing CI workflow is a reference audit only. Passing it does not demonstrate buildability, bootability, or hardware functionality.
+See `docs/LINEAGE23_PORTING_PLAN.md` for details. No build or device test is claimed complete.
