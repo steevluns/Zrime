@@ -20,7 +20,7 @@
 - Added `patches/kernel/0001-on7xelte-selinux-enforcing-baseline.patch` to remove both bypasses in the kernel configuration.
 - Added `docs/SELINUX_ENFORCING.md` with application steps, policy checks, boot-argument audit, and device validation.
 - The common device tree already includes the Exynos7870 SLSI SELinux policy makefile and the common vendor policy directory.
-- **Not yet complete:** the patch has not been applied to a checked-out kernel build, the final Android 16 policy has not been ported/compiled, and no enforcing boot or AVC validation has been performed. Do not call the ROM SELinux-enforcing yet.
+- **Not yet complete:** the final Android 16 policy has not been ported/compiled, and no enforcing boot or AVC validation has been performed. Do not call the ROM SELinux-enforcing yet.
 
 ## Other critical findings
 - The available source baseline is LineageOS 19.1 / Android 12L generation, **not** LineageOS 23 / Android 16.
@@ -33,17 +33,17 @@
 - Flashable ZIP: **not available**.
 - Boot test on SM-G610F: **not performed**.
 - GApps package: pending validation against the final Android 16 build and ABI.
-- The current GitHub Actions workflow is a source-reference audit only; it is not a ROM compiler.
+- The existing GitHub Actions workflows audit source references and validate one kernel patch; they are **not ROM compilers**.
 
 ## Next required work
 1. Identify a viable LineageOS 23 / Android 16 Exynos7870 platform base and all required dependency repositories.
 2. Port the device/common trees and vendor integration to the Android 16 build system and framework interfaces.
-3. Apply and validate the kernel SELinux patch, port the device policy, and pass enforcing boot/AVC tests.
+3. Compile and validate the kernel and device SELinux policy; pass enforcing boot/AVC tests.
 4. Validate partition sizes, recovery, and the exact SM-G610F variant.
 5. Only after the source port is coherent, add an Android 16 build workflow and attempt a userdebug build.
 6. Test boot and hardware functions before producing a release ZIP.
 
-See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No build or device test is claimed complete.
+See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No ROM build or device test is claimed complete.
 
 ## Follow-up upstream Android 16 source audit (2026-11-13)
 - Rechecked public GitHub repositories for an `on7xelte` / Exynos7870 Android 16 or LineageOS 23 device tree. No verifiable matching Android 16 device/common/vendor/kernel source set was found in the searches performed.
@@ -53,8 +53,9 @@ See `docs/LINEAGE23_PORTING_PLAN.md` and `docs/SELINUX_ENFORCING.md`. No build o
 - Decision: do not switch the project to an unverified ZIP, do not re-label old trees as Android 16, and do not start a release build until a coherent Android 16 source manifest and exact SM-G610F compatibility evidence are available.
 - Next gate: obtain and inspect the actual Android 16 device tree, common tree, kernel, vendor blobs and recovery/partition definitions; then validate build-system compatibility and security interfaces before enabling any ROM build workflow.
 
-## SELinux source-level CI check added (2026-11-13)
+## SELinux source-level CI check (2026-11-13)
 - Added `.github/workflows/selinux-kernel-patch-check.yml`.
-- On relevant pushes, pull requests, or manual dispatch, it checks out the exact kernel revision pinned in the reference manifest, verifies that the stored patch applies cleanly, applies it in the CI workspace, and asserts that the patched defconfig keeps SELinux enabled while removing the two known enforcement bypasses.
-- This workflow is a source-level patch-application check only. It does not compile the kernel or Android sepolicy, inspect the final boot image command line, boot the phone, or validate encryption/hardware. A passing run is not a ROM release approval.
-- The workflow was added in commit `e1b468290196533f768d782d83117d1febf02c76`; its run result has not yet been verified here.
+- The workflow checks out the exact kernel revision pinned in the reference manifest, verifies that the stored patch applies cleanly, applies it in the CI workspace, and asserts that the patched defconfig keeps SELinux enabled while removing the two known defconfig bypasses.
+- The first two workflow attempts failed due to malformed patch hunk metadata and then mismatched context. Both were corrected.
+- Latest run: **success**, run ID `43374453805`, on commit `c94ff5ab796f5701f78d104fc636977cc0e321e3`. The patch application and defconfig assertions passed.
+- This is a source-level patch check only. It does not compile the kernel or Android sepolicy, inspect the final boot image command line, boot the phone, or validate encryption/hardware. A passing run is not a ROM release approval.
