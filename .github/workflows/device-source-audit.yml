@@ -1,0 +1,42 @@
+name: J7 Prime device source audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check known legacy on7xelte source branches
+        shell: bash
+        run: |
+          set -u
+          mkdir -p audit
+          {
+            echo "# on7xelte source audit"
+            echo
+            echo "This checks legacy references only; it does not prove Android 16 compatibility."
+            echo
+            for repo in \
+              "https://github.com/Exynos7870/android_device_samsung_on7xelte.git" \
+              "https://github.com/Exynos7870/proprietary_vendor_samsung_on7xelte.git"; do
+              echo "## $repo"
+              if git ls-remote --heads "$repo" refs/heads/lineage-16.0 | grep -q .; then
+                echo "- Found legacy branch: lineage-16.0"
+              else
+                echo "- Legacy branch not found or repository unavailable"
+              fi
+              echo
+            done
+            echo "## Android 16 readiness"
+            echo "Not established. Device tree, kernel, vendor blobs, HALs, sepolicy, partition layout and ABI require manual engineering review."
+          } | tee audit/source-audit.md
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: on7xelte-source-audit
+          path: audit/source-audit.md
